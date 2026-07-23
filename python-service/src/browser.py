@@ -17,6 +17,10 @@ def get_chrome_options() -> Options:
     options.add_argument('--disable-extensions')
     options.add_argument('--disable-popup-blocking')
     options.add_argument('--ignore-certificate-errors')
+    options.add_argument('--disable-web-security')
+    options.add_argument('--disable-features=IsolateOrigins,site-per-process')
+    options.add_argument('--disable-infobars')
+    options.add_argument('--dns-prefetch-disable')
     return options
 
 def create_driver() -> webdriver.Chrome:
@@ -42,28 +46,24 @@ def create_driver() -> webdriver.Chrome:
             options.binary_location = chrome_binary
             logger.info(f'Using Chrome binary: {chrome_binary}')
 
-        chromedriver_paths = [
-            '/usr/bin/chromedriver',
-            '/usr/bin/google-chrome-stable',
-        ]
         service = None
-        for path in chromedriver_paths:
-            try:
-                subprocess.run([path, '--version'], capture_output=True, check=True)
-                if 'chromedriver' in path:
-                    service = Service(executable_path=path)
-                    logger.info(f'Using chromedriver: {path}')
-                    break
-            except (FileNotFoundError, subprocess.CalledProcessError):
-                continue
+        try:
+            result = subprocess.run(['which', 'chromedriver'], capture_output=True, text=True)
+            if result.returncode == 0:
+                chromedriver_path = result.stdout.strip()
+                service = Service(executable_path=chromedriver_path)
+                logger.info(f'Using chromedriver: {chromedriver_path}')
+        except Exception:
+            pass
 
         if service:
             driver = webdriver.Chrome(service=service, options=options)
         else:
             driver = webdriver.Chrome(options=options)
 
-        driver.set_page_load_timeout(30)
-        driver.implicitly_wait(5)
+        driver.set_page_load_timeout(60)
+        driver.set_script_timeout(30)
+        driver.implicitly_wait(10)
         logger.info('Chrome driver created successfully')
         return driver
     except WebDriverException as e:
