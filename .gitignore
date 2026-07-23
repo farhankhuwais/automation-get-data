@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+vendor/
+__pycache__/
+*.pyc
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build outputs
+dist/
+build/
+*.log
+
+# Docker
+.dockerignore
+
+# Credentials
+*.pem
+*.key
+credentials.json
